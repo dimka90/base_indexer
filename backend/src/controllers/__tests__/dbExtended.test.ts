@@ -94,5 +94,39 @@ describe('ExtendedTransferQueryService', () => {
       expect(TransferEvent.findAll).toHaveBeenCalled();
     });
   });
+
+  describe('getRecentBlocks', () => {
+    it('should return recent blocks with default limit', async () => {
+      const result = await ExtendedTransferQueryService.getRecentBlocks();
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(10);
+      expect(result[0]).toHaveProperty('id');
+      expect(result[0]).toHaveProperty('number');
+      expect(result[0]).toHaveProperty('hash');
+      expect(result[0]).toHaveProperty('timestamp');
+    });
+
+    it('should return blocks with custom limit', async () => {
+      const result = await ExtendedTransferQueryService.getRecentBlocks({ limit: 5 });
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(5);
+    });
+
+    it('should return blocks with correct structure', async () => {
+      const result = await ExtendedTransferQueryService.getRecentBlocks({ limit: 3 });
+
+      result.forEach((block) => {
+        expect(block).toHaveProperty('id');
+        expect(block).toHaveProperty('number');
+        expect(block).toHaveProperty('hash');
+        expect(block).toHaveProperty('timestamp');
+        expect(block).toHaveProperty('transactions');
+        expect(block).toHaveProperty('validator');
+        expect(block).toHaveProperty('gasUsed');
+      });
+    });
+  });
 });
 
