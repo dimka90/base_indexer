@@ -231,5 +231,42 @@ describe('ExtendedTransferQueryService', () => {
       });
     });
   });
+
+  describe('Integration tests', () => {
+    it('should work with all three methods sequentially', async () => {
+      const transfers = await ExtendedTransferQueryService.getRecentTransfers({ limit: 5 });
+      const blocks = await ExtendedTransferQueryService.getRecentBlocks({ limit: 5 });
+      const addresses = await ExtendedTransferQueryService.getTopAddresses({ limit: 5 });
+
+      expect(Array.isArray(transfers)).toBe(true);
+      expect(Array.isArray(blocks)).toBe(true);
+      expect(Array.isArray(addresses)).toBe(true);
+      expect(blocks.length).toBe(5);
+      expect(addresses.length).toBe(5);
+    });
+
+    it('should handle concurrent calls to different methods', async () => {
+      const [transfers, blocks, addresses] = await Promise.all([
+        ExtendedTransferQueryService.getRecentTransfers({ limit: 3 }),
+        ExtendedTransferQueryService.getRecentBlocks({ limit: 3 }),
+        ExtendedTransferQueryService.getTopAddresses({ limit: 3 }),
+      ]);
+
+      expect(transfers).toBeDefined();
+      expect(blocks).toBeDefined();
+      expect(addresses).toBeDefined();
+      expect(blocks.length).toBe(3);
+      expect(addresses.length).toBe(3);
+    });
+
+    it('should maintain consistent behavior across multiple calls', async () => {
+      const result1 = await ExtendedTransferQueryService.getRecentBlocks({ limit: 2 });
+      const result2 = await ExtendedTransferQueryService.getRecentBlocks({ limit: 2 });
+
+      expect(result1.length).toBe(result2.length);
+      expect(result1[0]).toHaveProperty('id');
+      expect(result2[0]).toHaveProperty('id');
+    });
+  });
 });
 
