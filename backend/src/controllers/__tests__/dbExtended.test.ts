@@ -189,6 +189,47 @@ describe('ExtendedTransferQueryService', () => {
         expect(address.address).toMatch(/^0x[a-f0-9]{40}$/);
       });
     });
+
+    it('should handle zero limit', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses({ limit: 0 });
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(0);
+    });
+
+    it('should handle large limit values', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses({ limit: 50 });
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(50);
+    });
+
+    it('should generate unique addresses', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses({ limit: 5 });
+
+      const addresses = result.map((addr) => addr.address);
+      const uniqueAddresses = new Set(addresses);
+      expect(uniqueAddresses.size).toBe(5);
+    });
+
+    it('should return valid balance format', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses({ limit: 3 });
+
+      result.forEach((address) => {
+        expect(address.balance).toMatch(/^\d+\.\d{4} ETH$/);
+        const balanceValue = parseFloat(address.balance.replace(' ETH', ''));
+        expect(balanceValue).toBeGreaterThanOrEqual(0);
+      });
+    });
+
+    it('should return valid transaction counts', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses({ limit: 3 });
+
+      result.forEach((address) => {
+        expect(typeof address.transactions).toBe('number');
+        expect(address.transactions).toBeGreaterThanOrEqual(0);
+      });
+    });
   });
 });
 
