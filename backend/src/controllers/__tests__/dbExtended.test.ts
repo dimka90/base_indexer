@@ -158,5 +158,37 @@ describe('ExtendedTransferQueryService', () => {
       expect(numbers[1]).toBeGreaterThan(numbers[2]);
     });
   });
+
+  describe('getTopAddresses', () => {
+    it('should return top addresses with default limit', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses();
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(10);
+      expect(result[0]).toHaveProperty('address');
+      expect(result[0]).toHaveProperty('balance');
+      expect(result[0]).toHaveProperty('transactions');
+    });
+
+    it('should return addresses with custom limit', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses({ limit: 5 });
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(5);
+    });
+
+    it('should return addresses with correct structure', async () => {
+      const result = await ExtendedTransferQueryService.getTopAddresses({ limit: 3 });
+
+      result.forEach((address) => {
+        expect(address).toHaveProperty('address');
+        expect(address).toHaveProperty('balance');
+        expect(address).toHaveProperty('transactions');
+        expect(address).toHaveProperty('lastActive');
+        expect(typeof address.address).toBe('string');
+        expect(address.address).toMatch(/^0x[a-f0-9]{40}$/);
+      });
+    });
+  });
 });
 
